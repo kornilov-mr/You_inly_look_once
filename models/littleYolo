@@ -1,0 +1,31 @@
+#config for littleyolo
+layers: conv,64,7,7,same;
+        maxpool,2,2;
+        conv,64,7,7,same;
+        maxpool,2,2;
+        conv,192,3,3,same;
+        maxpool,2,2;
+        conv,128,1,1,same;
+        conv,256,3,3,same;
+        conv,256,1,1,same;
+        conv,512,3,3,same;
+        maxpool,2,2;
+        conv,256,1,1,same;
+        conv,256,3,3,same;
+        conv,256,1,1,same;
+        conv,256,3,3,same;
+        conv,256,1,1,same;
+        conv,256,3,3,same;
+        conv,256,1,1,same;
+        conv,256,3,3,same;
+        conv,256,1,1,same;
+        conv,256,3,3,same;
+        maxpool,2,2;
+        conv,512,1,1,same;
+        conv,1024,3,3,same;
+        conv,512,1,1,same;
+        conv,1024,3,3,same;
+        conv,1024,3,3,same;
+        conv,1024,3,3,same;
+all_strids: 2,2;2,2;2,2;2,2;
+

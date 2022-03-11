@@ -5,11 +5,11 @@ import os
 import math
 import time
 import random
-# import numpy as np
-# import torch
-# import torch.distributed as dist
-# import torch.nn as nn
-# import yaml
+import numpy as np
+import torch
+import torch.distributed as dist
+import torch.nn as nn
+import yaml
 
 from copy import deepcopy
 from datetime import datetime
@@ -23,7 +23,7 @@ if str(ROOT) not in sys.path:
     sys.path.append(str(ROOT))
 ROOT = Path(os.path.relpath(ROOT, Path.cwd()))
 def main(opt):
-
+    pass
 def parsedata(known=False):
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights', type=str, default=ROOT / 'yolov5s.pt', help='initial weights path')
@@ -69,3 +69,4 @@ def parsedata(known=False):
     return opt
 if __name__=="__main__":
     opt=parsedata()
+    main(opt)
