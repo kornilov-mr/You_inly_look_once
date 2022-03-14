@@ -1,4 +1,4 @@
-#Import librery
+# Import librery
 import argparse
 import sys
 import os
@@ -7,23 +7,36 @@ import time
 import random
 import numpy as np
 import torch
-import torch.distributed as dist
-import torch.nn as nn
 import yaml
 
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
+from utilitis.datapreprocces import PrepareDataForYolo, getPath
 
-#Define fields
+# Define fields
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[0]
 if str(ROOT) not in sys.path:
     sys.path.append(str(ROOT))
 ROOT = Path(os.path.relpath(ROOT, Path.cwd()))
+BOX = 3
+
 def main(opt):
-    pass
+    yolo_config_file = "C:\Users\шведина\PycharmProjects\You_inly_look_once\models\littleYolo"
+    config_file = open(opt.cfg)
+    config = yaml.load(config_file, Loader=yaml.FullLoader)
+
+    train_dir = config["train"]
+    train_paths = getPath(train_dir)
+    X_train, Y_train = PrepareDataForYolo(opt.imgsz, opt.cfg, yolo_config_file, train_paths, BOX)
+
+    val_dir = config["val"]
+    val_paths = getPath(val_dir)
+    X_test, Y_test = PrepareDataForYolo(opt.imgsz, opt.cfg, yolo_config_file, val_paths, BOX)
+
+
 def parsedata(known=False):
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights', type=str, default=ROOT / 'yolov5s.pt', help='initial weights path')
@@ -67,6 +80,8 @@ def parsedata(known=False):
 
     opt = parser.parse_known_args()[0] if known else parser.parse_args()
     return opt
-if __name__=="__main__":
-    opt=parsedata()
+
+
+if __name__ == "__main__":
+    opt = parsedata()
     main(opt)

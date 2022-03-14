@@ -1,8 +1,15 @@
 import numpy as np
 import yaml
 import os
-import itertools
 from PIL import Image
+
+def getPath(dir):
+    paths=[]
+    for root, dirs, files in os.walk(dir):
+        for dir in dirs:
+            paths.append(dir)
+    return paths
+
 def createLabels(image_dirs,grids,box,classes,imgsz,channels):
     y=np.zeros((len(image_dirs),grids[0],grids[1],box,classes+5),dtype=np.float32)
     x=np.empty((len(image_dirs),imgsz[0],imgsz[1],channels),dtype=np.float32)
@@ -23,9 +30,6 @@ def createLabels(image_dirs,grids,box,classes,imgsz,channels):
                 contains[axis1, axis2]+=1
                 # images_dirs[image_id]=image_path
     return x,y
-
-
-
 
 def PrepareDataForYolo(imgsz,data_config_path,config_file_path,images_path,box):
     config_file = open(config_file_path)
