@@ -2,43 +2,22 @@
 import argparse
 import sys
 import os
-import math
-import time
-import random
 import numpy as np
-import torch
 import yaml
 
-from copy import deepcopy
-from datetime import datetime
 from pathlib import Path
-from utilitis.datapreprocces import PrepareDataForYolo, getPath
+from utilitis.datapreprocces import PrepareDataForYolo, getPath, DataGeneratorForYolo
 
 # Define fields
-
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[0]
 if str(ROOT) not in sys.path:
     sys.path.append(str(ROOT))
 ROOT = Path(os.path.relpath(ROOT, Path.cwd()))
-BOX = 3
-
-def main(opt):
-    yolo_config_file = "C:\Users\шведина\PycharmProjects\You_inly_look_once\models\littleYolo"
-    config_file = open(opt.cfg)
-    config = yaml.load(config_file, Loader=yaml.FullLoader)
-
-    train_dir = config["train"]
-    train_paths = getPath(train_dir)
-    X_train, Y_train = PrepareDataForYolo(opt.imgsz, opt.cfg, yolo_config_file, train_paths, BOX)
-
-    val_dir = config["val"]
-    val_paths = getPath(val_dir)
-    X_test, Y_test = PrepareDataForYolo(opt.imgsz, opt.cfg, yolo_config_file, val_paths, BOX)
-
 
 def parsedata(known=False):
     parser = argparse.ArgumentParser()
+    parser.add_argument('--BOX', type=int, default=3, help='how many object could be detected in one grid sell')
     parser.add_argument('--weights', type=str, default=ROOT / 'yolov5s.pt', help='initial weights path')
     parser.add_argument('--cfg', type=str, default='', help='model.yaml path')
     parser.add_argument('--data', type=str, default=ROOT / 'data/coco128.yaml', help='dataset.yaml path')
@@ -46,22 +25,16 @@ def parsedata(known=False):
     parser.add_argument('--epochs', type=int, default=300)
     parser.add_argument('--batch-size', type=int, default=16, help='total batch size for all GPUs, -1 for autobatch')
     parser.add_argument('--imgsz', '--img', '--img-size', type=int, default=640, help='train, val image size (pixels)')
-    parser.add_argument('--rect', action='store_true', help='rectangular training')
-    parser.add_argument('--resume', nargs='?', const=True, default=False, help='resume most recent training')
     parser.add_argument('--nosave', action='store_true', help='only save final checkpoint')
     parser.add_argument('--noval', action='store_true', help='only validate final epoch')
     parser.add_argument('--noautoanchor', action='store_true', help='disable AutoAnchor')
-    parser.add_argument('--evolve', type=int, nargs='?', const=300, help='evolve hyperparameters for x generations')
-    parser.add_argument('--bucket', type=str, default='', help='gsutil bucket')
-    parser.add_argument('--cache', type=str, nargs='?', const='ram', help='--cache images in "ram" (default) or "disk"')
+    parser.add_argument('--useGenerators', type=bool, nargs='?', const='ram',
+                        help='--cache images in "ram" (default) or "disk"')
     parser.add_argument('--image-weights', action='store_true', help='use weighted image selection for training')
     parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--multi-scale', action='store_true', help='vary img-size +/- 50%%')
     parser.add_argument('--single-cls', action='store_true', help='train multi-class data as single-class')
     parser.add_argument('--optimizer', type=str, choices=['SGD', 'Adam', 'AdamW'], default='SGD', help='optimizer')
-    parser.add_argument('--sync-bn', action='store_true', help='use SyncBatchNorm, only available in DDP mode')
-    parser.add_argument('--workers', type=int, default=8, help='max dataloader workers (per RANK in DDP mode)')
-    parser.add_argument('--project', default=ROOT / 'runs/train', help='save to project/name')
     parser.add_argument('--name', default='exp', help='save to project/name')
     parser.add_argument('--exist-ok', action='store_true', help='existing project/name ok, do not increment')
     parser.add_argument('--quad', action='store_true', help='quad dataloader')
@@ -81,7 +54,33 @@ def parsedata(known=False):
     opt = parser.parse_known_args()[0] if known else parser.parse_args()
     return opt
 
+def main():
+    opt = parsedata()
+    model_config_file = ROOT / opt.cfg
+    data_config_file = ROOT / opt.data
+
+    config_file = open(data_config_file)
+    config = yaml.load(config_file, Loader=yaml.FullLoader)
+
+    train_dir = config["train"]
+    val_dir = config["val"]
+    list_classes = config["class"]
+    classes = len(list_classes)
+
+    train_paths = getPath(train_dir)
+    test_paths = getPath(val_dir)
+
+    if not opt.useGenerators:
+        X_train, Y_train, train_img_sizes = PrepareDataForYolo(opt.imgsz, data_config_file, model_config_file,
+                                                               train_paths, opt.BOX, classes)
+        X_test, Y_test, test_img_sizes = PrepareDataForYolo(opt.imgsz, data_config_file, model_config_file, test_paths,
+                                                            opt.BOX, classes)
+    else:
+        train_list_ids = np.arrange(len(train_paths))
+        Train_generator = DataGeneratorForYolo(train_list_ids, train_paths, opt.imgsz, model_config_file, opt.BOX,
+                                               classes)
+        test_list_ids = np.arrange(len(test_paths))
+        Test_generator = DataGeneratorForYolo(test_list_ids, test_paths, opt.imgsz, model_config_file, opt.BOX, classes)
 
 if __name__ == "__main__":
-    opt = parsedata()
-    main(opt)
+    main()

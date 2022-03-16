@@ -1,4 +1,8 @@
 #config for littleyolo
+_BATCH_NORM_EPSILON: 0.0001
+_BATCH_NORM_DECAY: 0.9
+_LEAKY_RELU: 0.1
+_ANCHORS: [(10, 13), (16, 30), (33, 23),(30, 61), (62, 45), (59, 119),(116, 90), (156, 198), (373, 326)]
 layers: conv,64,7,7,same;
         maxpool,2,2;
         conv,64,7,7,same;
