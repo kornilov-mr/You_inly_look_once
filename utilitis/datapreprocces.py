@@ -27,7 +27,7 @@ def createLabels(image_dirs, grids, box, classes, imgsz, channels):
                 axis1 = params[1] // (1 / grids[0])
                 axis2 = params[2] // (1 / grids[1])
                 y[image_id, axis1, axis2, contains[axis1, axis2], 0] = 1
-                y[image_id, axis1, axis2, contains[axis1, axis2], 1:5] = params[1:5]
+                y[image_id, axis1, axis2, contains[axis1, axis2], 1:3] = params[1:5]
                 y[image_id, axis1, axis2, contains[axis1, axis2], params[0] + 5] = 1
                 contains[axis1, axis2] += 1
 
